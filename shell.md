@@ -70,7 +70,7 @@ echo UID: $UID
 echo HOME: $HOME
 ```
 #### **securecrt crtl+s 停止输入  ctrl+q 恢复输入**
-
+------
 ## 第二次整理
 #### 时间：2018年12月29日
 ### 主要内容：
@@ -139,24 +139,7 @@ EOF
 ```
 netstat -tulnp | grep 80
 ```
-
-关系运算符：只支持数字不支持字符串
-1. -eq：检测两个数是否相等，相等返回true
-2. -ne：检测两个数是否不相等，不相等返回true
-3. -gt：检测左边的数是否大于右边的，是则返回true
-4. -lt：检测左边的数是否小于右边的，是则返回true
-5. -ge：检测左边的数是否大于等于右边的，是则返回true
-6. -le：检测左边的数是否小于等于右边的，是则返回true
-
-```
-#判断当前用户是否为root
-if [ $UID -ne 0 ];then
-    echo Not root user.
-else
-    echo Root user.
-fi
-```
-
+------
 ## 第三次整理
 #### 时间：2018年12月30日
 ### 主要内容：
@@ -264,6 +247,7 @@ echo ${A}B
  [c1-c2] | 匹配c1-c2中任意单一字符 | a[0-9]b ab之间有且仅有一个阿拉伯数字
  {string1,string2,...} | 匹配string1或string2（或更多）其中一个字符串 | a{abc,123,xyz}b ab之间只能有个一字符串，且只能为abc或123或xyz
 
+------
 ## 第四次整理
 #### 时间：2018年12月31日
 ### 主要内容：
@@ -348,7 +332,154 @@ echo $?
 6. 在bash shell中，可以通过将美元符号放在由方括号包围的表达式之前来执行基本的运算。
 7. shell中运行的每个命令都会产生一个退出状态码,退出状态码是一个0～255的整数值，表明命令是否成功执行；如果没有成功，可能的原因是什么。退出状态码0表明命令成功执行了。你可以在shell脚本中用exit命令来声明一个脚本完成时的退出状态码。
 
+------
+## 第五次整理
+#### 时间：2011年1月1日
+### 主要内容：
+结构化命令
+许多程序要求对shell脚本中的命令施加一些逻辑流程控制，有一类命令会根据条件使脚本跳过某些命令，这样的命令通常称为结构化命令，结构化命令允许改变程序执行顺序。
+if-then-else命令
+```
+if command
+then
+    commands
+else
+    commands 
+fi
+或
+if command; then commands; else commands; fi
+```
+shell 的if语句会运行if后面的那个命令，如果该命令的退出状态码是0，则位于then部分的命令就会被执行；若该命令的退出状态码是其他值，then部分的命令就不会被执行，shell会继续执行else中的命令，fi语句表示if-then语句到此结束。
+```
+#!/bin/bash
+#testing the if statement
+if pwd
+then
+    echo "It worked"
+else
+    echo "Error"
+fi
+输出：/root(当前路径)
+输出：It worked
+```
+布尔逻辑
+shell中有两个常量（实际是两个内置命令），true和false，一个表示真（返回值为0），一个表示假（返回值为1）；对它们可以进行与、或、非运算等常规逻辑运算。
+与运算用&&表示，或运算用||表示，非运算，即取反用!表示。
+```
+#与或非运算
+if true;then echo "YES"; else echo "NO"; fi
+输出：YES
+if false; then echo "YES"; else echo "NO"; fi
+输出：NO
 
+#与运算用&&表示
+if true && true; then echo "YES"; else echo "NO"; fi
+输出：YES
+if true && false; then echo "YES"; else echo "NO"; fi
+输出：NO
+
+#或运算用||表示
+if true || true; then echo "YES"; else echo "NO"; fi
+输出：YES
+if true || false; then echo "YES"; else echo "NO"; fi
+输出：YES
+
+#非运算，即取反用!表示
+if ! false; then echo "YES"; else echo "NO"; fi
+输出：YES
+if ! true; then echo "YES"; else echo "NO"; fi
+输出：NO
+```
+##### 条件测试
+数值测试
+运算符 | 命令 | 描述
+:--------: | :-----: | :------:
+-eq | n1 -eq n2 |检测n1和n2是否相等，相等返回true
+-ne | n1 -ne n2 |检测n1和n2是否不相等，不相等返回true
+-gt | n1 -gt n2 | 检测n1是否大于n2，是则返回true
+-lt | n1 -lt n2 | 检测n1是否小于n2，是则返回true
+-ge | n1 -ge n2 | 检测n1是否大于或等于n2，是则返回true
+-le | n1 -le n2 | 检测n1是否小于或等于n2，是则返回true
+
+```
+#判断当前用户是否为root
+if [ $UID -ne 0 ];then
+    echo Not root user
+else
+    echo Root user
+fi
+输出：Root user
+
+#判断两数是否相等
+if [ 5 -eq 5 ];then echo "YES"; else echo "NO"; fi
+输出：YES
+```
+字符串测试
+运算符 | 命令 | 描述
+:--------: | :-----: | :------:
+= | str1 = str2 |检测str1和str2是否相等，相等返回true
+!= | str1 != str2 |检测str1和str2是否不相等，不相等返回true
+> | str1 > str2 | 检测str1是否大于str2，是则返回true
+< | str1 < str2 | 检测str1是否小于str2，是则返回true
+-n | -n str1 | 检测str1的长度是否非0，是则返回true
+-z | -z str1 | 检测str1的长度是否为0，是则返回true
+
+```
+if [[ -n 'not empty' ]]; then echo "YES"; else echo "NO"; fi
+输出：YES
+```
+文件测试
+比较 | 描述
+:---: | :---:
+-d file | 检查file是否存在并是一个目录
+-e file | 检查file是否存在
+-f  file | 检查file是否存在并是一个文件
+-r  file | 检查file是否存在并可读
+-s file | 检查file是否存在并非空
+-w file | 检查file是否存在并可写
+-x file | 检查file是否存在并可执行
+-o file | 检查file是否存在并属当前用户所有
+-G file | 检查文件是否存在并且默认组合当前用户相同
+file1 -nt file2 | 检查file1是否比file2新
+file1 -ot file2 | 检查file1是否比file2旧
+```
+#!/bin/bash
+# Look before you leap
+#
+jump_directory=/home/arthur
+#
+if [ -d $jump_directory ]
+then
+	echo "The $jump_directory directory exists"
+	cd $jump_directory
+	ls
+else
+	echo "The $jump_directory directory does not exist"
+fi
+#
+输出：The /home/arthur directory does not exist
+
+if [ -f /bin/bash ]; then echo "YES"; else echo "NO"; fi
+输出：YES
+```
+复合条件测试
+if-then语句允许使用布尔逻辑来组合测试
+- [ ] [ condition1 ] && [ contional2 ]
+- [ ] [ condition1 ] || [ condition2 ]
+
+```
+# 检查$HOME是否是一个目录，且该目录下testing文件是否存在并可写
+#!/bin/bash
+# testing compound comparisons
+#
+if [ -d $HOME ] && [ -w $HOME/testing ]
+then
+	echo "The file exists and you can write to it"
+else
+	echo "The file not exists"
+fi
+输出：The file not exists
+```
 
 # **Markdown操作手册**
 # 一级标题
@@ -357,7 +488,7 @@ echo $?
 #### 四级标题
 ##### 五级标题
 ###### 六级标题
-[访问连接](https://www.baidu.com)
+[百度链接](https://www.baidu.com)
 
 >Github 为软件开发者提供项目管理，代码托管
 
@@ -401,11 +532,12 @@ markdown = redcarpet.new("Hello World")
 ***加粗斜体***   
 ~~删除线~~   
 ***
----
+
+----
 
 First Header | Second Header | Third Header
 :------------| :-----------: | -----------:
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2018-12-13/5c12068e80958.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2018-12-26/5c23298c83daa.jpg "美女镇楼")
