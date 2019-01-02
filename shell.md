@@ -1,6 +1,6 @@
-# shell 编程
+ # shell 编程
 ## 第一次整理
-#### 时间：2018年12月28日
+### 时间：2018年12月28日
 ### 主要内容：
 创建shell脚本文件时，必须在文件的第一行指定使用的shell
 ```
@@ -481,7 +481,132 @@ fi
 输出：The file not exists
 ```
 
+
+
+## 第六次整理
+
+#### 时间：2018年12月30日
+
+### 主要内容：
+if-then 的高级特性
+shell提供了两项可在if-then语句中使用的高级特性：
+- [ ] 用于数学表达式的双括号
+- [ ] 用于高级字符串处理功能的双方括号
+双括号命令允许在比较过程中使用高级数学表达式。
+命令格式：(( expression ))
+expression可以是任意的数学赋值或比较表达式。
+
+双括号命令符号
+符号 | 描述
+:----: | :-----:
+var++ | 后增
+var-- | 后减
+++var | 先增
+--var | 先减
+! | 逻辑求反
+~ | 位求反
+** | 幂运算
+<< | 左位移
+\>> | 右位移
+& | 位布尔和
+\| | 位布尔或
+&& | 逻辑和
+\|\| | 逻辑或
+
+```
+#!/bin/bash
+# using double parenthesis
+#
+var1=10
+#
+if (( $var1 ** 2 > 90 ))
+then
+	(( var2 = $var1 **2 ))
+	echo "The square of $var1 is $var2"
+fi
+输出：The square of 10 is 100
+注：双括号内的大于号不需要转义。
+```
+
+双方括号命令提供了针对字符串比较高级的特性
+格式：[[ expression ]]
+
+```
+#!/bin/bash
+# using pattern mathing
+#
+if [[ $USER == r* ]]
+then
+	echo "Hello $USER"
+else
+	echo "Sorry,I do not know you"
+fi
+输出：Hello root
+注：双等于号将右边的字符串(r*)视为一个模式，并应用模式匹配规则。双方括号命令$USER环境变量进行匹配，看它是否以字母r开头，若是，则比较通过，shell执行then部分的命令。
+```
+
+case命令会将指定的变量与不同模式进行比较，如果变量和模式是匹配的，则shell会执行为该模式指定的命令。可以通过竖线操作符在一行中分割出多个模式，星号会捕获所有与已知模式不匹配的值。以case开始，到esac结束。
+语法
+```
+case variable in
+pattern1 | pattern2) commands1;;
+pattern3) commands2;;
+*) default commands;;
+esac
+注：除了*)模式，各个分支中;;是必须的，相当于break。
+```
+```
+#!/bin/bash
+# looking for a possible value
+#
+if [ $user = "root" ]
+then 
+	echo "Welcome $USER"
+	echo "Please enjoy you visit"
+elif [ $USER = "barbara" ]
+then 
+	echo "Welcome $USER"
+	echo "Please enjoy you visit"
+elif [ $USER "testing" ]
+then
+	echo "Special testing account"
+elif [ $USER = "jessica" ]
+then
+	echo "Do not forget to logout when you're done"
+else
+	echo "Sorroy, you are not allowed here"
+fi
+输出：Welcome Root
+	 Please enjoy your visit
+	 
+#使用case
+#!/bin/bash
+# using the case command
+#
+case $USER in
+root | barbara
+	echo "Welcome, $USER"
+	echo "Please enjoy you visit";;
+testing)
+	echo "Special testing account";;
+jessica)
+	echo "DO not forget to log off when you are done;;
+*)
+	echo "Sorry, you are not allowed here";;
+esac
+```
+##### 小结
+1. 结构化命令允许改变shell脚本的正常执行流。最基本的结构化命令是if-then语句。该语句允许执行一个命令并根据该命令的输出来执行其他命令。
+2. 也可以扩展if-then语句为if-then-else，加入一组当指定命令失败后shell执行的命令(else)，仅在测试命令返回非零退出状态码时，if-then-else语句才允许执行命令。
+3. 可以将if-then-else语句通过elif语句连接起来。elif等同于使用else if语句，会在测试命令失败时提供额外的检查。
+4. 在很多脚本中，你可能希望测试一种条件而不是一个命令，比如数值、字符串内容、文件或目录的状态。test命令提供了测试这些条件的简单方法。如果条件为TRUE，test命令会为if-then语句产生退出状态码0。如果条件为FALSE，test命令会为if-then语句产生一个非零的退出状态码。
+5. 方括号是与test命令同义的特殊shell命令。可以在if-then语句中将测试条件放在方括号中来测试数值、字符串和文件条件。
+6. 双括号使用另一种操作符进行高级数学运算。双方括号命令允许高级字符串模式匹配运算
+7. case命令是执行多个if-then-else命令的简便方式，它会参照一个值列表来检查单个变量的值。
+
+
 # **Markdown操作手册**
+
 # 一级标题
 ## 二级标题
 ### 三级标题
@@ -540,4 +665,4 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2018-12-26/5c23298c83daa.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2018-12-26/5c23479451aba.jpg "美女镇楼")
