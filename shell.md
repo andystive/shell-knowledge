@@ -323,7 +323,8 @@ echo $?
 输出：30
 
 ```
-##### 小结
+小结
+
 1. bash shell脚本允许将多个命令串起来放进脚本中，创建脚本的最基本的方式是将命令行中的多个命令通过分号分开来，shell会按顺序逐个执行命令，在显示器上显示每个命令的输出。也可以创建一个shell脚本文件，将多个命令放进同一个文件，让shell依次执行。
 2. shell脚本文件必须定义用于运行脚本的shell。这个可以通过#!符号在脚本文件的第一行指定，后面跟上shell的完整路径，常用的为#!/bin/bash。
 3. 在shell脚本内，可以通过在变量前使用美元符来引用环境变量，也可以定义自己的变量以便在脚本内使用，并对其赋值，甚至还可以通过反引号或$()捕获的某个命令的输出。在脚本中可以通过在变量名前放置一个美元符来使用变量的值。
@@ -334,7 +335,7 @@ echo $?
 
 ------
 ## 第五次整理
-#### 时间：2011年1月1日
+#### 时间：2019年1月1日
 ### 主要内容：
 结构化命令
 许多程序要求对shell脚本中的命令施加一些逻辑流程控制，有一类命令会根据条件使脚本跳过某些命令，这样的命令通常称为结构化命令，结构化命令允许改变程序执行顺序。
@@ -390,7 +391,8 @@ if ! false; then echo "YES"; else echo "NO"; fi
 if ! true; then echo "YES"; else echo "NO"; fi
 输出：NO
 ```
-##### 条件测试
+条件测试
+
 数值测试
 运算符 | 命令 | 描述
 :--------: | :-----: | :------:
@@ -485,11 +487,12 @@ fi
 
 ## 第六次整理
 
-#### 时间：2018年12月30日
+#### 时间：2019年1月2日
 
 ### 主要内容：
 if-then 的高级特性
 shell提供了两项可在if-then语句中使用的高级特性：
+
 - [ ] 用于数学表达式的双括号
 - [ ] 用于高级字符串处理功能的双方括号
 双括号命令允许在比较过程中使用高级数学表达式。
@@ -605,6 +608,133 @@ esac
 7. case命令是执行多个if-then-else命令的简便方式，它会参照一个值列表来检查单个变量的值。
 
 
+
+## 第七次整理
+
+#### 时间：2019年1月3日
+
+### 主要内容：
+
+for命令运行创建一个遍历一系列值的循环，每次迭代都使用其中一个值来执行已定义好的一组命令。
+
+基本格式：
+
+```
+for var in list
+do
+	commands
+done
+```
+do和done语句之间输入的命令可以是一条或多条标准的shell命令，每次迭代，$var会包含列表中当前值。
+for读取列表中复杂值，如单引号，空格等需要转义的值，默认情况下，shell会将空格、制表符和换行符作为字段分割符
+- [ ] 使用转义符（\）将单引号转义
+- [ ] 使用双引号来定义用到单引号的值
+```
+#!/bin/bash
+for test in I don't know if this'll work
+do
+	echo "word:$test"
+done
+输出：I
+	 dont know if thisll
+	 work
+#转义符
+#!/bin/bash
+for test in I don\'t know if this\'ll work
+do
+	echo "word:$test"
+done
+输出：I
+	 don't
+	 know
+	 if
+	 thisll
+	 work
+#双引号
+#！/bin/bash
+for test in I "don't" know if "this'll" work
+do
+	echo "word:$test"
+done
+输出：I
+	 don't
+	 know
+	 if
+	 thisll
+	 work
+```
+for从变量读取列表
+```
+#!/bin/bash
+list="Alabama Alasks Arizona"
+list=$list" Connecticut"
+for state in $list
+do
+	echo "Have you ever visited $state?"
+done
+输出：Have you ever visited Alabama?
+	 Have you ever visited Alasks?
+	 Have you ever visited Arizona?
+	 Have you ever visited Connecticut?
+注：list=$list" Connecticut"为向list列表字符串尾部添加一个Connecticut字符串，从而list="Alabama Alasks Arizona Connecticut"
+```
+for读取命令输出
+```
+#!/bin/bash
+# 将下面三个字符串写入到state文件
+cat >>/root/states <<EOF
+Alabama
+Alaska
+Arizona
+EOF
+# 开始for循环
+file="/root/states"
+for state in $(cat $file)
+do
+	echo "Visit beautiful $state"
+done
+输出：Visit beautiful Alabama
+	 Visit beautiful Alaska
+	 Visit beautiful Arizona
+```
+for用通配符读取目录，可以一次查找多个目录
+```
+#列出/dev目录下的普通文件和文件夹
+#!/bin/bash
+for file in /dev/*
+do
+	if [[ -d $file ]]
+	then
+		echo "$file is a directory"
+	elif [[ -f $file ]]
+	then 
+		echo "$file is a file"
+	fi
+done
+输出：/dev/block is a directory
+	 /dev/core is a file
+	 ......
+#注：for语句首先使用了文件扩展匹配来遍历通配符生成的文件列表，该列表包含/dev文件夹下所有文件，然后它会遍历列表中的每一个文件，然后找出普通文件和文件夹。
+```
+C语言风格的for循环
+基本格式
+for (( variable assignment ; condition ; iteration process ))
+for (( a = 1; a < 10; a++ ))
+- [ ] 变量赋值可以有空格
+- [ ] 条件中的变量不以$开头
+- [ ] 可以使用多个变量
+
+```
+#!/bin/bash
+for (( a=1, b=10; a <= 10; a++, b-- ))
+do
+	echo "$a -$b"
+done
+输出：1 - 10
+	 2 - 9
+	 ......
+```
+
 # **Markdown操作手册**
 
 # 一级标题
@@ -665,4 +795,4 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2018-12-26/5c23479451aba.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2019-01-03/5c2dafa18fff3.jpg "美女镇楼")
