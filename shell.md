@@ -734,9 +734,94 @@ done
 	 2 - 9
 	 ......
 ```
+## 第八次整理
+### 时间：2019年1月4日
+### 主要内容：
+while
+while命令某种意义上是if-then语句和for的混杂体，while允许定义一个要测试的命令，只要定义的测试命令返回的退出状态码是0时，循环就执行一组命令，若测试命令返回非0退出状态码时，while命令停止执行。
+基本语法
+```
+while test command
+do
+	other commands
+done
+```
+while 命令的关键在于所指定的test command的退出状态码必须随着循环中运行的命令而改变，如果退出状态码不发生改变，while循环将一直不停的进行下去。如果在while语句行定义多个测试命令，每个测试命令都出现在单独的一行上，则只有最后一个测试命令的退出状态码会被用来决定什么时候结束循环。
+```
+#!/bin/bash
+var1=10
+while echo $var1
+	[ $var1 -ge 0 ] 
+	#$var1为0时，[ $var1 -ge 0 ]成立，返回值为0，循环继续，执行[ $var1 -1 ]，此时$var1为-1，[ $var1 -ge 0 ]不成立，返回值非0，循环终止。
+do
+	echo "This is inside the loop"
+	var1=$[ $var1 -1 ]
+done
+输出：10
+	 This is inside the loop
+	 ......
+注：第一个命令为读取$var1的值，第二个命令为判断$var1是否大于等于0，当第二个命令的退出状态码为非0时，第二条命令停止执行，循环终止。
+```
+until命令
+until命令和while命令工作方式完全相反，until命令要求指定一个通常返回非0退出状态码的测试命令。只有退出状态码不为0时，shell才会执行循环中列出的命令。如果在until语句行定义多个测试命令，每个测试命令都出现在单独的一行上，则只有最后一个测试命令的退出状态码会被用来决定什么时候结束循环。
+基本语法
+```
+until test commands
+do
+	other commands
+done
+```
+```
+#!/bin/bash
+var1=100
+until echo $var1
+	[ $var1 -eq 0 ]
+	#当var1=25时，[ $var1 -eq 0 ]不成立，返回值不为0，执行[ $var1 -25 ]，当var1=0时，[ $var1 -eq 0 ]成立，返回值为0，命令退出，循环终止。
+do
+	echo Inside the loop: $var1
+	var1=$[ $var1 -25 ]
+done
+输出：100
+	 Inside the loop: 100
+	 ......
+```
+echo输出字符串总结
+符号 |能否引用常规字符串 | 能否引用转义符 | 能否引用文本格式符（换行符、制表符）
+:-----: | :-----: | :-----: | :------:
+单引号 |能 | 否 | 否 | 否
+双引号 | 能 | 能 | 能 | 能
+无引号 | 能 | 能 | 能 | 否
+
+嵌套循环
+循环语句可以在循环中使用任意命令，包括其他循环命令，当循环中包含其他循环命令时，改循环为嵌套循环，需要注意的是，嵌套循环中，是在迭代中使用迭代，与命令运行的次数是乘积关系。
+被嵌套的循环称为内部循环，会在外部循环的每次迭代中遍历一次它所有的值，需要注意的是，两个循环中do和done命令没有任何区别，shell会把第一个done命令作为内部循环的结束。
+```
+#!/bin/bash
+var1=5
+while [ $var1 -ge 0 ]
+do
+	echo "output loop: $var1"
+	for (( var2 = 1; $var2 < 3; var2++ ))
+	do
+		var3=$[ $var1 * $var2 ]
+		echo "Inner loop: $var1 * $var2 = $var3"
+	done
+	var1=$[ $var1 - 1 ]
+done
+输出：output loop: 5
+	 Inner loop: 5 * 1 = 5
+	 Inner loop: 5 * 2 = 10
+	 ......
+```
+## 第九次整理
+### 时间：2019年1月5日
+### 主要内容：
+环境变量
+IFS环境变量
+
+循环处理文件数据
 
 # **Markdown操作手册**
-
 # 一级标题
 ## 二级标题
 ### 三级标题
@@ -795,4 +880,4 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2019-01-03/5c2dafa18fff3.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2019-01-04/5c2f1c880a8fa.jpg "美女镇楼")
