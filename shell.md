@@ -817,9 +817,122 @@ done
 ### 时间：2019年1月5日
 ### 主要内容：
 环境变量
-IFS环境变量
+Shell的环境变量分为set和env两种，其中set变量可以通过export工具导入到env变量中，set 显示本地shell变量，仅在本 shell 中有效；env 显示设置用户环境变量，仅在当前会话中有效。这两种变量不同之处在于变量的作用域不同，env 变量的作用域要大些。
 
-循环处理文件数据
+按生命周期划分：
+永久的：需要用户修改/etc/profile配置文件，变量永久生效
+临时的：用户利用export命令，在当前终端下声明环境变量，关闭shell终端失效
+
+按作用域划分：
+系统环境变量：系统环境变量对该系统中所有用户都有效
+用户环境变量：环境变量只对特定的用户有效
+
+设置方法（添加apache变量）：
+添加系统环境变量
+vim编辑profile文件，然后在export PATH后另起一行输入export PATH=$PATH:/usr/local/apache/bin，保存退出，然后执行source /etc/profile使变量立即生效。
+```
+vim /etc/profile
+#以下为profile文件内容
+# /etc/profile: system-wide .profile file for the Bourne shell (sh(1))
+# and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+
+if [ "`id -u`" -eq 0 ]; then
+  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+else
+  PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
+fi
+export PATH
+......
+#以下为需要添加和执行的内容
+export PATH=$PATH:/usr/local/apache/bin
+source /etc/profile
+```
+添加用户环境变量
+```
+vim ~/.bash_profile
+#以下为.bash_profile文件内容
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin
+
+export PATH
+#以下为需要添加和执行的内容
+export PATH=$PATH:/usr/local/apache/bin
+#或者直接添加到PATH后面，中间有分号隔开
+PATH=$PATH:$HOME/bin:/usr/local/apache/bin
+source ~/.bash_profile
+```
+直接运行export定义变量，只对当前shell有效，shell关闭，变量失效
+```
+export PATH=$PATH:/usr/local/apache/bin
+#注：$PATH是读取当前环境变量，故export PATH=$PATH:/usr/local/apache/bin等同于PATH=$PATH:$HOME/bin:/usr/local/apache/bin
+```
+其他命令
+echo $PATH显示当前环境变量
+env 显示所有环境变量
+set 显示本地定义的shell变量
+unset HELLO 清除环境变量HELLO
+readonly HELLO 设置只读环境变量HELLO
+
+IFS环境变量（内部域分隔符）
+默认情况下，shell将空格符、制表符(TAB)和换行符作为字段分隔符，遇到这些字符时，shell会认为字符后是一个新的字段，当需要处理包含空格符、制表符(TAB)和换行符的字段时就需要通过改变IFS的值来改变分隔符。
+IFS 是一种set变量，当shell处理 处理包含空格符、制表符(TAB)和换行符的字段时，shell根据 IFS的值来拆解读入的变量，然后对特殊字符进行处理，最后重新组合赋值给该变量。
+```
+#!/bin/bash
+list="we are anonymoys"
+for str1 in $list
+do
+	echo $str1
+done
+输出：we
+	 are
+	 anonymous
+
+#!/bin/bash
+list="we are anonymoys"
+ifs_old=$IFS
+IFS=$'\n'
+for str1 in $list
+do
+	echo $str1
+done
+IFS=$ifs_old
+输出：we are anonymoys
+#注：每次设置IFS前，保存一下当前IFS，用完之后，恢复原来的值。
+```
+修改IFS环境变量，循环处理文件数据
+如处理/etc/passwd文件中的数据，要求逐行遍历/etc/passwd文件，并将IFS变量的值改成冒号，这样才能分开每行中的各个数据段。
+```
+#!/bin/bash
+ifs_old=$IFS
+IFS=$'\n'
+for str1 in $(cat /etc/passwd)
+do
+	echo "Values in $str1 -"
+	IFS=$':'
+	for str2 in $str1
+	do
+		echo "$str2"
+	done
+done
+IFS=$ifs_old
+输出：Values in root:x:0:0:root:/root:/bi -
+	 root
+	 x
+	 0
+	 0
+	 root
+	 /root
+	 /bi
+	......
+```
 
 # **Markdown操作手册**
 # 一级标题
@@ -880,4 +993,4 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2019-01-04/5c2f1c880a8fa.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2019-01-04/5c2f1c8916ebd.jpg "美女镇楼")
