@@ -933,6 +933,285 @@ IFS=$ifs_old
 	 /bi
 	......
 ```
+## 第十次整理
+### 时间：2019年1月6日
+### 主要内容：
+循环控制
+break命令可以退出任意类型的循环，包括while和until循环
+跳出单个循环
+```
+#!/bin/bash
+for var1 in 1 2 3 4 5 6 7
+do
+	if [ $var1 -eq 5 ]
+	then
+		break
+	fi
+	echo "number: $var1"
+done
+echo "The for loop is completed"
+输出：number: 1
+	 ......
+	 number: 5
+	 The for loop is completed
+```
+跳出内部循环
+当变量b的值等于5时，执行break命令终止内部循环。break接受单个命令行参数值，break n ，其中n指定了要跳出循环层级，默认情况下，n=1，表明跳出当前循环，n=2时，break命令会停止下一级的外部循环。
+```
+#!/bin/bash
+for (( a = 1; a < 4; a++ ))
+do
+	echo "outer loop: $a"
+	for (( b = 1; b < 100; b++ ))
+	do
+		if [ $b -eq 5 ]
+		then
+			break
+			#break 2
+		fi
+		echo "Inner loop: $b"
+	done
+done
+输出：outer loop: 1
+		Inner loop: 1
+		......
+		Inner loop: 4
+	......
+```
+continue命令可以提前终止某次循环，但并不会完全终止整个循环，只会终止shell循环内部符合条件的部分。
+```
+#!/bin/bash
+for (( var1 = 1; var1 < 10; var1++ ))
+do
+	if [ $var1 -gt 2 ] && [ $var1 -lt 9 ]
+	#判断var1是否大于2且小于9，是则执行continue
+	then
+		continue
+	fi
+	echo "Interation number：$var1"
+done
+输出：Interation number:1
+	 Interation number:2
+	 Interation number:9
+```
+continue接受单个命令行参数值，continue n ，其中n指定了要跳出循环层级，默认情况下，n=1，表明跳出当前循环，n=2时，break命令会停止下一级的外部循环。
+```
+#!/bin/bash
+for (( a = 1; a <= 5; a++ ))
+do
+	echo "Internation $a:"
+	for (( b = 1; b < 3; b++ ))
+	do
+		if [ $a -gt 2 ] && [ $a -lt 4 ]
+		then
+			continue 2
+        fi
+		var3=$[ $a * $b ]
+		echo "The result of $a * $b = $var3"
+	done
+done
+输出：Internation 1:
+	 The result of 1 * 1 = 1
+	 The result of 1 * 2 = 2
+	 Internation 2:
+	 The result of 2 * 1 = 2
+	 The result of 2 * 2 = 4
+	 Internation 3:
+	 Internation 4:
+	 The result of 4 * 1 = 4
+	 The result of 4 * 2 = 8
+#注：只有值为3的那次迭代没有处理任何内部循环语句，尽管continue命令停止了处理过程，但外部循环依然会继续
+	 ......
+```
+处理循环的输出
+shell脚本中，可以对循环的输出使用管道或进行重定向，可以通过done命令之后添加处理命令来实现
+```
+#将for循环输出的结果重定向到output.txt文件中
+#!/bin/bash
+for file in /dev/*
+do
+	if [[ -d $file ]]
+	then
+		echo "$file is a directory"
+	elif
+		echo "$file is a file"
+	fi
+done > output.txt
+```
+小结
+1. for命令允许你遍历一系列的值，不管是在命令行里提供好的、包含在变量中的还是通过文件扩展匹配获得的文件名和目录名。
+2. while命令使用普通命令或测试命令提供了基于命令条件的循环。只有在命令（或条件）产生退出状态码0时，while循环才会继续迭代指定的一组命令。
+3. until命令也提供了迭代命令的一种方法，但它的迭代是建立在命令（或条件）产生非零退出状态码的基础上。这个特性允许你设置一个迭代结束前都必须满足的条件。
+4. 可以在shell脚本中对循环进行组合，生成多层循环。bash shell提供了continue和break命令，允许你根据循环内的不同值改变循环的正常流程。
+5. shell还允许使用标准的命令重定向和管道来改变循环的输出。你可以使用重定向来将循环的输出重定向到一个文件或是另一个命令。
+
+## 第十一次整理
+### 时间：2019年1月7日
+### 主要内容：
+处理用户输入
+前面以及初步了解了如何编写脚本，处理数据、变量和Linux系统上的文件。有时编写的脚本还得能够与使用者进行交互。bash shell提供了一些不同的方法来从用户处获得数据，包括命令行参数（添加在命令后的数据）、命令行选项（可修改命令行为的单个字母）以及直接从键盘读取输入的能力
+命令行参数
+读取参数
+shell会将一些称为位置参数的特殊变量分配给输入到命令行中的所有参数，位置参数变量是标准的数字：$0是程序名，$1是第一个参数，$2是第二个参数，以此类推，如果脚本需要的命令行参数不止9个，你仍然可以处理，但是需要稍微修改一下变量名。在第9个变量之后，你必须在变量数字周围加上花括号，比如${10}。
+可以在shell脚本中像使用其他变量一样使用$1变量。shell脚本会自动将命令行参数的值分配给变量，不需要作任何处理。如果需要输入更多的命令行参数，则每个参数都必须用空格分开
+```
+#!/bin/bash
+factorial=1
+for (( number = 1; number <= $1; number++ ))
+do
+	factorial=$[ $factorial * $number ]
+done
+echo The factorial of $1 is $factorial
+#注：将以上代码保存到test.sh文件中然后执行：./test.sh 5
+输出：The factorial of 5 is 120
+
+#!/bin/bash
+total=$[ $1 * $2 ]
+echo The first parameter is $1.
+echo The second parameter is $2.
+echo The total value is $total.
+#注：将以上代码保存到test2.sh中，然后执行./test2.sh 2 5
+输出：The The first parameter is 2.
+	 The second parameter is 5.
+	 The total value is 10.
+```
+在命令行上用文本字符串作为参数，若参数中有空格，则必须使用引号（单引号双引号均可）
+```
+#!/bin/bash
+echo Hello $1, glad to meet you.
+#注：将以上字符串保存到test3.sh，然后执行./test3.sh 'tom jobs'
+输出：Hello tom jobs,glad to meet you.
+```
+读取脚本名
+可以使用$0参数获取shell在命令行启动的脚本名，当传给$0变量的实际字符串不仅仅是脚本名，而是完整的脚本路径时，变量$0就会使用整个路径。basename命令会返回不包含路径的脚本名
+```
+#!/bin/bash
+echo The zero parameter is set to: $0
+输出：The zero parameter is set to: ./test4.sh
+
+#!/bin/bash
+name=$(basename $0)
+echo The script name is: $name
+输出：The script name is: test4.sh
+```
+测试参数
+在shell脚本中使用命令行参数时要小心些。如果脚本不加参数运行，可能会出问题
+```
+#!/bin/bash
+if [[ -n $1 ]]
+#使用-n测试来检查命令行参数$1中是否有数据
+then
+	echo Hello $1, glad to meet you.
+else
+	echo "sorry, you did not identify yourselt."
+#注：将以上代码保存到test5.sh
+执行./test5.sh jobs
+输出：Hello jobs, glad to meet you.
+执行./test5.sh
+输出：sorry, you did not identify yourselt.
+```
+
+## 第十二次整理
+### 时间：2019年1月8日
+### 主要内容：
+获取用户输入
+read命令从标准输入（键盘）或另一个文件描述符中接收输入，在收到输入后，read命令会将数据放进一个变量。
+```
+#!/bin/bash
+echo -n "Enter your name: "
+#read -n选项不会在字符末尾输出换行符，允许脚本用户紧跟其后输入数据，而不是下一行。
+read name
+echo "Hello $name, welcome to my program."
+输出：Enter your name: 
+输入：jobs
+输出：Hello jobs, welcome to my program.
+```
+read -p允许直接在read命令行指定提示符，read命令行可以指定多个变量，若不指定变量，则read接收的所有数据都存放到特殊环境变量REPLY中，调用时直接使用$REPLY即可。
+```
+#!/bin/bash
+read -p "Please enter your age: " age
+days=[ $age * 365 ]
+echo "That makes you over $days days old!"
+输出：Please enter your age: 
+输入：10
+输出：That makes you over 3650 dyys old!
+```
+设置超时
+使用read命令时，若用户没有及时输入数据，则脚本会一直处于等待状态，此时可以用-t选项来指定一个计时器。-t选项指定了read命令等待输入的秒数，当计时器过期后，read命令会返回一个非零退出状态码。
+也可以不对输入过程计时，而是让read命令来统计输入的字符数。当输入的字符达到预设的字符数时，就自动退出，将输入的数据赋给变量。
+```
+#!/bin/bash
+read -n1 -p "Do you Want to continue [Y/N]?" answer
+case $answer in
+y | Y ) echo
+		echo "fine, continue on ...";;
+n | N ) echo
+		echo OK， goodbye
+		exit;;
+esac
+echo "This is the end of the script"
+```
+隐藏方式读取（如输入密码）
+-s选项可以避免在read命令中输入的数据出现在显示器上（实际上，数据会被显示，只是read命令会将文本颜色设成背景色一样）
+```
+#!/bin/bash
+read -s -P "Enter your password:" pass
+echo
+echo "Is your password really $pass?"
+#执行该脚本，会输出前面输入隐藏的密码
+```
+read从文件中读取参数
+read命令来读取Linux系统上文件里保存的数据。每次调用read命令，它都会从文件中读取一行文本。当文件中再没有内容时，read命令会退出并返回非零退出状态码。其中最难的部分是将文件中的数据传给read命令，最常见的方法是对文件使用cat命令，将结果通过管道直接传给含有read命令的while命令，或者使用重定向读取文件内容。
+```
+#cat方法
+#!/bin/bash
+count=1
+cat test | while read line
+do
+	echo "Line $count: $line"
+	count=$[ $count + 1 ]
+done
+echo "Finished processing the file"
+
+#重定向方法
+#!/bin/bash
+count=1
+while read line
+do
+	echo "Line $count: $line"
+	count=$[ $count + 1 ]
+done < test.sh
+echo "Finished processing the file"
+```
+调试脚本
+```
+#bash -x script.sh
+```
+使用-x选项，启动追踪调试shell脚本，运行带有-x标志的脚本能打印出所执行的每一行命令及当前的状态。
+-x标志的脚本执行过程中的每一行都输出到stdout，若只需关注脚本某些部分的命令及参数打印输出，可以在脚本中使用set built-in来启动或禁止调试打印
+- [ ] set -x： 在执行时显示参数和命令
+- [ ] set +x：禁止调试
+- [ ] set -v：当命令进行读取时显示输入
+- [ ] set +v：禁止打印输出
+
+```
+#!/bin/bash
+for i in {1..6}
+do
+set -x
+	echo $i
+set +x
+done
+echo "script executed"
+输出：+ echo 1
+	 1
+	 + set +x
+	 + echo 2
+	 2
+```
+以上代码，仅在-x和+x所限制的区域内，echo $i 的调试信息才会被打印出来
+补充内容
+调试脚本是可以巧妙的利用shebang来进行调试，将#!/bin/bash改成#!/bin/bash -xv，如此不用任何选项就可以启用调试功能。
 
 # **Markdown操作手册**
 # 一级标题
@@ -993,4 +1272,8 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2019-01-04/5c2f1c8916ebd.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2019-01-08/5c3432eba48e0.jpg "美女镇楼")
+
+```
+
+```
