@@ -1045,9 +1045,11 @@ done > output.txt
 4. 可以在shell脚本中对循环进行组合，生成多层循环。bash shell提供了continue和break命令，允许你根据循环内的不同值改变循环的正常流程。
 5. shell还允许使用标准的命令重定向和管道来改变循环的输出。你可以使用重定向来将循环的输出重定向到一个文件或是另一个命令。
 
+
 ## 第十一次整理
 ### 时间：2019年1月7日
 ### 主要内容：
+
 处理用户输入
 前面以及初步了解了如何编写脚本，处理数据、变量和Linux系统上的文件。有时编写的脚本还得能够与使用者进行交互。bash shell提供了一些不同的方法来从用户处获得数据，包括命令行参数（添加在命令后的数据）、命令行选项（可修改命令行为的单个字母）以及直接从键盘读取输入的能力
 命令行参数
@@ -1114,8 +1116,10 @@ else
 ## 第十二次整理
 ### 时间：2019年1月8日
 ### 主要内容：
+
 获取用户输入
 read命令从标准输入（键盘）或另一个文件描述符中接收输入，在收到输入后，read命令会将数据放进一个变量。
+
 ```
 #!/bin/bash
 echo -n "Enter your name: "
@@ -1213,6 +1217,309 @@ echo "script executed"
 补充内容
 调试脚本是可以巧妙的利用shebang来进行调试，将#!/bin/bash改成#!/bin/bash -xv，如此不用任何选项就可以启用调试功能。
 
+## 第十三次整理
+### 时间：2019年1月9日
+### 主要内容：
+
+函数
+创建函数，函数不一定非在脚本的开始，但必须先定义后引用。
+- [ ] 采用关键字function
+function name {
+    commands
+}
+name属性定义了赋予函数的唯一名称，脚本中定义的每个函数都必须有一个唯一的名称。
+commands是构成函数的一条或多条shell命令，调用改函数时，shell会按命令在函数中出现的顺序依次执行。
+- [ ] 函数名后跟空括号
+name () {
+    commands
+}
+```
+#!/bin/bash
+function func1 { 
+	echo "This is an example of a function"
+}
+
+count=1
+while [ $count -le 2 ]
+do
+	func1
+	count=$[ $count + 1 ]
+done
+echo "This is the end of the script"
+输出：This is an example of a function
+	 This is an example of a function
+	 This is the end of the script
+```
+函数返回值
+shell会把函数当做一个小脚本，运行结束时会返回一个退出状态码
+默认情况下，函数的退出状态码是函数最后一条命令返回的退出状态码，在函数执行结束时后，可以用标准变量$?来确定函数的退出状态码。
+```
+#!/bin/bash
+
+func1() {
+    echo "trying to display a non-existent file"
+    ls -l badfile
+}
+
+echo "testing the function: "
+func1
+echo "The exit status is: $?"
+输出：trying to display a non-existent file
+	 ls: badfile: No such file or directory
+	 The exit status is: 1
+```
+函数的退出状态码是1，因为函数中的最后一条命令没有运行成功，但无法知道函数中其他命令是否成功，所以使用函数默认退出状态码是危险的。
+使用return设置特定的退出状态码
+- [ ] 函数一结束就取返回值
+- [ ] 退出状态码必须是0-255，否则会返回错误值。
+```
+#!/bin/bash
+
+function db1 {
+    read -p "Enter a value: " value
+    echo "doubling the value"
+    return $[ $value * 2 ]
+    
+}
+
+db1
+echo "The new value is $?"
+```
+使用函数输出值
+正如可以命令的输出保存到shell变量一样，也可以对函数的输出采用同样的处理办法，可以用此获取任何类型的函数输出，并将其保存到变量中。
+将db1函数的输出赋值给$result变量
+```
+#!/bin/bash
+function db1 {
+    read -p "Enter a value: " value
+    echo $[ $value * 2 ]
+}
+
+result=$(db1)
+echo "The new value is $result"
+输出：Enter a value：200
+	 The new  value is $result
+```
+在函数中使用变量
+向函数传递参数，函数可以用参数变量来获取参数值。
+```
+#!/bin/bash
+function addem {
+    if [ $# -eq 0 ] || [ $# -gt 2 ]
+    # $#是特殊变量，用于统计命令行携带参数的个数
+    then
+    	echo -1
+    elif [ $# -eq 1 ]
+    then
+    	echo $[ $1 + $1 ]
+    else
+    	echo $[ $1 + $2 ]
+    fi
+}
+echo -n "Adding 10 and 15:"
+value=$(addem 10 15)
+echo $value
+echo -n "Let's try addingg just one number:"
+value=$(addem 10)
+echo -n "Now trying adding no number:"
+value=$(addem)
+echo $value
+echo -n "Finally, try adding tree numbers:"
+value=$(addem 10 15 20)
+echo $value
+```
+脚本中的addem函数首先会检测脚本传给它的参数数目，若没有任何参数，或者参数多于两个，addem会返回值-1，若只有一个参数，addem会将参数与自身相加，若有两个参数，addem会将他们进行相加。
+补充：
+$#为统计命令行携带参数的个数，$\*和$@可以用来所有的参数,这两个变量都能够在单个变量中存储所有的命令行参数。
+$\*变量会将命令行上提供的所有参数当作一个单词保。这个单词包含了命令行中出现的每一个参数值，基本上$\*变量会将这些参数视为一个整体，而不是多个个体。
+$@变量会将命令行上提供的所有参数当作同一字符串中的多个独立的单词。这样就能够遍历所有的参数值，得到每个参数。
+
+```
+#!/bin/bash
+# script name: test.sh
+# testing $* and $#
+echo
+count=1
+for patam in "$*"
+do
+	echo "\$* Parameter #$count = $param"
+	count=$[ $count + 1 ]
+done
+echo
+count=1
+for param in "$@"
+do
+	echo "\$@ Parameter #$count = $param"
+	count=$[ $count + 1 ]
+done
+运行./test.sh root jobs andy
+输出：$* Parameter #1 = root jobs andy
+	 $@ Parameter #1 = root
+	 $@ Parameter #1 = jobs
+	 $@ Parameter #1 = andy
+#注：$*变量会将所有参数当成单个参数，而$@变量会单独处理每个参数
+```
+## 第十四次整理
+### 时间：2019年1月10日
+### 主要内容：
+
+在函数中处理变量
+shell脚本麻烦之一是变量的作用域，作用域是变量可见的区域，函数中定义的变量与普通变量的作用域不同，简单说就是，对脚本的其他部分而言，它们是隐藏的。
+函数中的两种类型变量：
+- [ ] 全局变量
+- [ ] 局部变量
+
+全局变量
+全局变量是在shell脚本中任何地方都有效的变量，若在脚本的主体部分定义了一个全局变量，那么可以在函数内读取它的值，类似的，若在函数内定义一个全局变量，则可以在脚本的主体部分读取它的值。
+默认情况下，在脚本中定义的任何变量都是全局变量，函数外定义的变量，函数内可以正常访问。
+
+```
+#!/bin/bash
+function db1 {
+    value=$[ $value * 2 ]
+}
+read -p "Enter a value:" value
+db1
+echo "The new value is: $value"
+输出：Enter a value: 450
+	 The new value is: 900
+```
+$value变量在函数外定义并被赋值。当dbl函数被调用时，该变量及其值在函数中都依然有
+效。如果变量在函数内被赋予了新值，那么在脚本中引用该变量时，新值也依然有效。
+
+局部变量
+无须在函数中使用全局变量，函数内部使用的任何变量都可以被声明为局部变量，只需在变量声明的前面加上local关键字即可，也可以在变量赋值语句中使用local关键字（local temp=$[ $value + 5 ]）。
+local关键字保证了变量只局限在该函数中，若脚本中该函数之外有同样名字的变量，shell会保持这两个变量的值是分离的，可以将函数变量和脚本变量隔离开。
+```
+#!/bin/bash
+#定义函数局部变量temp和全局变量result
+function func1 {
+    local temp=$[ $value + 5 ]
+    #此时temp为局部变量值
+    result=$[ $temp * 2 ]
+}
+
+temp=4
+value=6
+
+func1
+echo "The result is $result"
+if [ $temp -gt $value ]
+#此时temp为全局变量值
+then
+	echo "temp is larger"
+else
+	echo "temp is smaller"
+fi
+输出：The result is 22
+	 temp is smaller
+```
+数组
+数组中可以存放多个值，shell只支持一维数组，初始化时无需定义数组大小，数组元素的下标由0开始。
+数组用括号来表示，元素用空格符号分隔开
+定义数组
+```
+my_array=(A B "C" D)
+或
+array_name[0]=value0
+array_name[1]=value1
+array_name[2]=value2
+```
+读取数组
+```
+${array_name[index]}
+#使用@或*获取数组中所有元素
+${array_name[*]}
+${array_name[@]}
+```
+使用#获取数组长度
+```
+${#array_name[*]}
+${#array_name[@]}
+```
+使用!获取数组下标
+```
+array=('a' 'b' 'c')
+for i in ${!array[@]}
+do
+	echo $1
+done
+输出：0
+	 1
+	 2
+```
+数组变量和函数
+将数组变量作为单个参数传递的话不会起作用，若将数组变量作为函数参数，函数只会去数组变量的第一个值
+```
+#!/bin/bash
+function testit {
+ 	#把获取到的变量全部输出
+    echo "The parameters are: $@"
+    #获取第一个参数，即将整个数组作为一个参数传递给函数
+    thisarrary=$1
+    #读取thisarrary数组中的所有值
+    echo "The received arrary is ${thisarrary[*]}"
+}
+
+myarrary=(1 2 3 4 5)
+echo "The original arrary is: ${myarrary[*]}"
+#将数组作为参数传递给函数
+testit $myarrary
+输出：The original arrary is: 1 2 3 4 5
+	 The parameters are: 1
+	 The received arrary is 1
+```
+要解决这个问题，必须将该数组变量的值分解成单个的值，然后将这些值作为函数参数使用。在函数内部，可以将所有的参数重新组合成一个新的变量
+```
+#!/bin/bash
+function testit {
+	#定义局部变量
+    local newarray
+    #读取数组中的所有数值，并保存到数组中
+    newarray=($(echo "$@"))
+    echo "The new array value is: ${newarray[*]}
+}
+myarray=(1 2 3 4 5)
+echo "The original array is ${myarray[*]}"
+testit ${myarray[*]}
+输出：The original array is 1 2 3 4 5 
+	 The new array value is: 1 2 3 4 5
+#注：该脚本用$myarray变量来保存所有的数组元素，然后将它们都放在函数的命令行上。该函数随后从命令行参数中重建数组变量。在函数内部，数组仍然可以像其他数组一样使用。
+```
+从函数返回数组
+函数用echo语句来按正确顺序输出单个数组值，然后脚本再将它们重新放进一个新的数组变量中
+```
+#!/bin/bash
+function arrarydblr {
+    local origarray
+    local newarray
+    local elements
+    local i
+    origarray=($(echo "$@"))
+    newarray=($(echo "$@"))
+    #获取数组的长度，因为数字下标是从0开始，所以要减1
+    elements=$[ $# -1 ]
+    for (( i = 0; i <= $elements; i++ ))
+    {
+    	#将origarray数组的值单个取出来进行运算，然后添加到newarray数组中
+        newarray[$i]=$[ ${origarray[$i]} * 2 ]
+    }
+    echo ${newarray[*]}
+}
+
+myarray=(1 2 3 4 5)
+echo "The original array is: ${myarray[*]}"
+#将myarray数组中的值取出，放入arg1变量
+arg1=$(echo ${myarray[*]})
+#arg1变量将参数传递给arraydblr函数
+result=($(arraydblr $arg1))
+echo "The new array is: ${result[*]}"
+输出：The original array is: 1 2 3 4 5
+	 The new array is: 2 4 6 8 10
+```
+该脚本用$arg1变量将数组值传给arraydblr函数。arraydblr函数将该数组重组到新的数组变量中，生成该输出数组变量的一个副本。然后对数据元素进行遍历，将每个元素值翻倍，并将结果存入函数中该数组变量的副本。
+arraydblr函数使用echo语句来输出每个数组元素的值。脚本用arraydblr函数的输出来重新生成一个新的数组变量。
+
 # **Markdown操作手册**
 # 一级标题
 ## 二级标题
@@ -1272,7 +1579,7 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2019-01-08/5c3432eba48e0.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2019-01-10/5c36e1a2875e1.jpg "美女镇楼")
 
 ```
 
