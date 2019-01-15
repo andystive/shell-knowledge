@@ -1520,6 +1520,292 @@ echo "The new array is: ${result[*]}"
 该脚本用$arg1变量将数组值传给arraydblr函数。arraydblr函数将该数组重组到新的数组变量中，生成该输出数组变量的一个副本。然后对数据元素进行遍历，将每个元素值翻倍，并将结果存入函数中该数组变量的副本。
 arraydblr函数使用echo语句来输出每个数组元素的值。脚本用arraydblr函数的输出来重新生成一个新的数组变量。
 
+## 第十五次整理
+### 时间：2019年1月14日
+### 主要内容：
+函数递归
+局部变量的一个特性是自成体系，除了从脚本命令行处获取变量，自成体系函数不需要使用任何外部资源。这个特性使函数可以递归调用，即函数可以调用自己运行得到的结果。
+递归算法经典案例：计算阶乘
+5! = 1\*2\*3\*4\*5 = 120   =>>  x! = x\*(x-1)! 
+简单说x的阶乘等于x乘以x-1的阶乘
+```
+#!/bin/bash
+function func1 {
+    if [ $1 -eq 1 ]
+    then
+    	echo 1
+    else
+    	local temp=$[ $1 -1 ]
+    	local result=$(func1 $temp)
+    	echo $[ $result * $1 ]
+    fi
+}
+
+read -p "Enter value: " value
+result=$(func1 $value)
+echo "The func1 of $value is: $result"
+输出：Enter value: 5
+	 The func1 of 5 is: 120
+```
+交互式shell
+创建文本菜单
+创建交互式shell脚本最常用的方法是试用菜单，提供各种选项可以帮助脚本用户了解脚本功能。通常菜单脚本会清空显示区域，然后显示可用的选项列表，用户可以按下与每个选项关联的字母或数字来选择选项；shell脚本菜单的核心是case命令，case命令会根据用户在菜单上的选择来执行特定命令。
+默认情况下，echo命令只显示可打印文本字符，在创建菜单是，非可打印字符通常也很有用，如制表符和换行符，要在echo命令中包含这些字符，需使用-e选项
+```
+echo -e "1.\tDisplay disk space"
+输出：1.	Display disk space
+```
+```
+#!/bin/bash
+clear
+echo
+echo -e "\t\t\tSys Admin Menu\n"
+echo -e "\t1. Display disk space"
+echo -e "\t2. Display Logged on users"
+echo -e "\t3. Display memory usage"
+echo -e "\t0. Exit menu\n\n"
+echo -en "\t\tEnter option: "
+#注：最后一行 -en 选项会去掉末尾的换行符，让菜单看起来更专业一些
+```
+创建菜单的最后一步是获取用户输入，需要用read命令，read命令中用-n选项限制输入的字符数，用户输入指定字符后，无须按回车即可执行命令
+```
+read -n 1 option
+```
+创建菜单函数
+shell脚本菜单选项作为一组独立的函数实现起来更为容易，要创建出简介、准确、容易理解的case命令，需要为每个菜单选项创建独立的shell函数。
+创建shell菜单脚本的第一步是决定希望脚本执行哪些功能，然后将这些功能以函数的形式放在代码中。通常会为还没有实现的函数先创建一个桩函数，桩函数是一个空函数，或者只有一个echo语句，说明最终这里需要什么。
+```
+function diskspace {
+    clear
+    echo "This is where the diskspace commands will go"
+}
+```
+或者将菜单布局本身作为一个函数来创建，这样在任何时候都能调用menu函数来重现菜单
+```
+function menu {
+    clear
+    echo
+    echo -e "\t\t\tSys Admin Menu\n"
+	echo -e "\t1. Display disk space"
+	echo -e "\t2. Display Logged on users"
+	echo -e "\t3. Display memory usage"
+	echo -e "\t0. Exit menu\n\n"
+	echo -en "\t\tEnter option: "
+	read -n 1 option
+}
+```
+添加逻辑菜单
+第二步需要创建程序逻辑将菜单布局和函数结合起来，需要用到case命令，case命令根据菜单中输入的字符来调用相应的函数，可以用默认的case命令字符（星号）来处理所有不正确的菜单项。
+```
+menu
+case $option in
+0),
+	break ;;
+1)
+	diskspace ;;
+2)
+	whoseon
+3)
+	memusage ;;
+*)
+	clear
+	echo "Sorry, wrong selection" ;;
+esac
+```
+这段代码首先用menu函数清空屏幕并显示菜单，menu函数中的read命令会一直等待，直到用户在键盘上键入字符，然后case命令就会接管余下的处理过程，case命令会基于返回的字符调用相应的函数，在函数运行结束后，case命令退出。
+
+整合shell脚本菜单
+前面已经完成构成shell脚本菜单的各个部分，现在需要将它们组合在一起制作一个完整的菜单脚本
+```
+#!/bin/bash
+
+function diskspace {
+        clear
+        df -k
+}
+
+function whoseon {
+        clear
+        who
+}
+
+function memusage {
+        clear
+        cat /proc/meminfo
+}
+
+function menu {
+        clear
+        echo
+        echo -e "\t\t\tSys Admin Meun\n"
+        echo -e "\t1. Display disk sapce"
+        echo -e "\t2. Display logged on users"
+        echo -e "\t3. Display memory usage"
+        echo -e "\t0. Exit program\n\n"
+        echo -en "\t\tEnter option: "
+        read -n 1 option
+}
+
+while [ 1 ]
+do
+        menu
+        case $option in
+        0)
+                break ;;
+        1)
+                diskspace ;;
+        2)
+                whoseon ;;
+        3)
+                memusage ;;
+        *)
+                clear
+                echo "Sorry, wrong selection" ;;
+        esac
+        echo -en "\n\n\t\t\tPress any key to continue"
+        read -n 1 line
+done
+clear
+```
+使用select命令
+创建文本菜单的一半功夫都花在建立菜单布局和获取用户输入，shell提供了一个小工具可以自动完成这些工作
+```
+select variable in list
+do
+	commands
+done
+```
+list参数是由空格分隔的文本选项列表，这些列表构成了整个菜单，select命令会将每个列表项显示成一个带编号的选项，然后为选项显示一个由PS3环境变量定义的特殊提示符
+```
+#!/bin/bash
+
+function diskspace {
+        clear
+        df -k
+}
+
+function whoseon {
+        clear
+        who
+}
+
+function memusage {
+        clear
+        cat /proc/meminfo
+}
+
+PS3="Enter option: "
+select option in "Display disk space" "Display logged on users" "Display memory usage" "Exit program"
+do
+	case $option in
+	"Exit program")
+		break ;;
+	"Display disk space")
+		diskspace
+	"Display logged in users")
+		whoseon ;;
+	"Display memory usage")
+		memusage ;;
+	*)
+		clear
+		echo "Sorry, wrong selection" ;;
+	esac
+done
+clear
+```
+select语句中的所有的内容必须作为一行出现，使用select命令时，需记住，存储在变量中的结果值是整个文本字符串而不是跟菜单选项相关联的数字，文本字符串值才是要在case语句中进行比较的内容。
+
+## 第十六次整理
+### 时间：2019年1月15日
+### 主要内容：
+sed编辑器被称为流编辑器，和普通的交互式文本编辑器恰好相反，在交互式文本编辑器中（vim），可以用键盘命令来交互的插入、删除或替换数据中的文本，流编辑器则会在编辑器处理数据之前基于预先提供的一组规则来编辑数据流。
+sed编辑器可以根据命令逐行来处理数据流中的数据，这些命令要么从命令行中输入，要么存储在一个命令文本文件中，sed编辑器会执行以下操作：
+1. 一次从输入中读取一行数据；
+2. 根据所提供的编辑器命令匹配数据；
+3. 按照命令修改流中的数据；
+4. 将新的数据输出到STDOUT。
+```
+sed options script file
+```
+选项 | 描述
+:----: | :----:
+-e script | 在处理输入时，将script中指定的命令添加到已有的命令中
+-f file | 在处理输入时，将file中指定的命令添加到已有的命令中
+- n | 不产生命令输出，使用print命令来完成输出
+
+script参数指定了应用于数据流上的单个命令，如果需要多个命令，则需用-e选项在命令行中指定，或使用-f选项在单独的文件中指定。
+
+在命令行定义编辑器命令
+```
+echo "This is a test" | sed 's/test/big test/'
+# s命令会用斜线间指定的第二个文本字符串来替换第一个文本字符串，两端的单引号是边界，s是命令，两边的斜线值字符串边界，中间的斜线是分割线
+输出：This is a big test
+```
+sed编辑器并不会修改文本文件的数据，只会将修改后的数据发送到STDOUT，如果查看原来的文本文件，仍然是原始数据。
+
+在命令行汇总使用多个编辑命令时，只需用-e选项即可，两个命令都作用在文件中的每行数据上，命令之间必须用分号隔开，并且在命令末尾和分号之间不能有空格；或者用两个单引号包含住分行写的命令，但是必须在封尾单引号所在行结束命令，shell一旦发现了封尾单引号就会执行命令。。
+```
+cat >> data1.txt <<EOF
+The quick brown fox jumps over the lazy dog.
+EOF
+sed -e 's/brown/green/; s/dog/cat/' data1.txt
+或
+cat >> data1.txt <<EOF
+The quick brown fox jumps over the lazy dog.
+EOF
+sed -e '
+s/brown/green/
+s/dog/cat/' data1.txt
+输出：The quick green fox jumps over the lazy cat.
+```
+从文件中读取编辑器命令
+若有大量要处理的sed命令，可以将它们放进一个单独的文件中，可以用-f参数来指定文件。这种情况下，不用在每条命令后放一个分号，sed编辑器知道每行都是一条单独的命令。
+```
+cat >> data1.txt <<EOF
+The quick brown fox jumps over the lazy dog.
+EOF
+cat >> script.sed <<EOF
+s/brown/green/
+s/fox/elephant/
+s/dog/cat/
+EOF
+sed -f script.sed data1.txt
+# 因为很容易把sed编辑器脚本文件跟shell脚本文件搞混，所以可以使用.sed作为sed文件的扩展名
+输出：The quick green elephant jumps over the lazy cat.
+```
+s替换命令可以替换多行中的文本，但默认情况下只替换每行中出现的第一处，要然替换命令能够替换一行中不同地方出现的文本时必须使用替换标记，替换标记在替换命令字符串之后设置。
+```
+s/pattern/replacement/flags
+```
+有4种可用的替换标记
+- [ ] 数字，表明新文本将替换第几处模式匹配的地方；
+- [ ] g，表明新文本将会替换所有匹配的文本；
+- [ ] p，表明原先行的内容要打印出来
+- [ ] w file，将替换的结果写到文件中。
+
+```
+cat >>test.txt <<EOF
+This is a test of the trial script.
+This is the second test of the trial script.
+EOF
+sed 's/test/trial/2' test.txt
+输出：This is a test of the trial script.
+	 This is the second trial of the trial script.
+	 
+sed 's/test/trial/g' test.txt
+
+sed -n 's/test/trial/p' text.txt
+# p标记会打印与替换命令中指定的模式匹配的行，通常和-n选项一起使用，-n选项禁止sed编辑器输出，但p标记会输出修改过的行，所有二者结合就是只输出被替换命令修改过的行。
+输出：This is a trial of the trial script.
+
+sed 's/test/trial/w test.txt' data.txt
+```
+替换字符
+有时会在文本字符串中遇到一些不太方便在替换模式中使用的字符，常见的有正斜线（/），替换文件中的路径名比较麻烦，由于正斜线通常用作字符串分隔符，若出现在了模式文本中，需用反斜线来转义；sed编辑器允许使用其他字符来作为替换命令中的分隔符。
+```
+sed 's/\/bin\/bash\/bin\/csh/' /etc/passwd
+sed 's%/bin/bash%/bin/csh%' /etc/passwd
+```
 # **Markdown操作手册**
 # 一级标题
 ## 二级标题
@@ -1579,8 +1865,9 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2019-01-10/5c36e1a2875e1.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2018-09-14/5b9b46faab09f.jpg "美女镇楼")
 
 ```
 
 ```
+
