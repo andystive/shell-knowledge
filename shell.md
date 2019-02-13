@@ -1,4 +1,5 @@
- # shell 编程
+# shell 编程
+
 ## 第一次整理
 ### 时间：2018年12月28日
 ### 主要内容：
@@ -266,7 +267,7 @@ linux中一切皆文件，内核给每个访问的文件分配了文件描述符
 #列出/目录下的文件
 ls /
 输出：根目录下的文件和文件夹
-ls / >/dev/null 2>&1 
+ls / >/dev/null 2>&1
 输出：空
 ```
 > /dev/null 文件可以理解为垃圾桶，信息到这里面就消失了，>/dev/null 相当于1 > /dev/null 即将标准输出上的信息重定向到垃圾桶，2>&1 即标准错误输出重定向（等同于）到标准输出，因为之前标准输出已经重定向到了空设备文件，所以标准错误输出也相当于重定向到空设备文件（垃圾桶）。
@@ -345,7 +346,7 @@ if command
 then
     commands
 else
-    commands 
+    commands
 fi
 或
 if command; then commands; else commands; fi
@@ -563,11 +564,11 @@ esac
 # looking for a possible value
 #
 if [ $user = "root" ]
-then 
+then
 	echo "Welcome $USER"
 	echo "Please enjoy you visit"
 elif [ $USER = "barbara" ]
-then 
+then
 	echo "Welcome $USER"
 	echo "Please enjoy you visit"
 elif [ $USER "testing" ]
@@ -581,7 +582,7 @@ else
 fi
 输出：Welcome Root
 	 Please enjoy your visit
-	 
+
 #使用case
 #!/bin/bash
 # using the case command
@@ -707,7 +708,7 @@ do
 	then
 		echo "$file is a directory"
 	elif [[ -f $file ]]
-	then 
+	then
 		echo "$file is a file"
 	fi
 done
@@ -751,7 +752,7 @@ while 命令的关键在于所指定的test command的退出状态码必须随�
 #!/bin/bash
 var1=10
 while echo $var1
-	[ $var1 -ge 0 ] 
+	[ $var1 -ge 0 ]
 	#$var1为0时，[ $var1 -ge 0 ]成立，返回值为0，循环继续，执行[ $var1 -1 ]，此时$var1为-1，[ $var1 -ge 0 ]不成立，返回值非0，循环终止。
 do
 	echo "This is inside the loop"
@@ -1126,7 +1127,7 @@ echo -n "Enter your name: "
 #read -n选项不会在字符末尾输出换行符，允许脚本用户紧跟其后输入数据，而不是下一行。
 read name
 echo "Hello $name, welcome to my program."
-输出：Enter your name: 
+输出：Enter your name:
 输入：jobs
 输出：Hello jobs, welcome to my program.
 ```
@@ -1136,7 +1137,7 @@ read -p允许直接在read命令行指定提示符，read命令行可以指定�
 read -p "Please enter your age: " age
 days=[ $age * 365 ]
 echo "That makes you over $days days old!"
-输出：Please enter your age: 
+输出：Please enter your age:
 输入：10
 输出：That makes you over 3650 dyys old!
 ```
@@ -1235,7 +1236,7 @@ name () {
 }
 ```
 #!/bin/bash
-function func1 { 
+function func1 {
 	echo "This is an example of a function"
 }
 
@@ -1279,7 +1280,7 @@ function db1 {
     read -p "Enter a value: " value
     echo "doubling the value"
     return $[ $value * 2 ]
-    
+
 }
 
 db1
@@ -1482,7 +1483,7 @@ function testit {
 myarray=(1 2 3 4 5)
 echo "The original array is ${myarray[*]}"
 testit ${myarray[*]}
-输出：The original array is 1 2 3 4 5 
+输出：The original array is 1 2 3 4 5
 	 The new array value is: 1 2 3 4 5
 #注：该脚本用$myarray变量来保存所有的数组元素，然后将它们都放在函数的命令行上。该函数随后从命令行参数中重建数组变量。在函数内部，数组仍然可以像其他数组一样使用。
 ```
@@ -1526,7 +1527,7 @@ arraydblr函数使用echo语句来输出每个数组元素的值。脚本用arra
 函数递归
 局部变量的一个特性是自成体系，除了从脚本命令行处获取变量，自成体系函数不需要使用任何外部资源。这个特性使函数可以递归调用，即函数可以调用自己运行得到的结果。
 递归算法经典案例：计算阶乘
-5! = 1\*2\*3\*4\*5 = 120   =>>  x! = x\*(x-1)! 
+5! = 1\*2\*3\*4\*5 = 120   =>>  x! = x\*(x-1)!
 简单说x的阶乘等于x乘以x-1的阶乘
 ```
 #!/bin/bash
@@ -1732,6 +1733,7 @@ sed options script file
 -e script | 在处理输入时，将script中指定的命令添加到已有的命令中
 -f file | 在处理输入时，将file中指定的命令添加到已有的命令中
 - n | 不产生命令输出，使用print命令来完成输出
+- i | 直接对文件进行操作
 
 script参数指定了应用于数据流上的单个命令，如果需要多个命令，则需用-e选项在命令行中指定，或使用-f选项在单独的文件中指定。
 
@@ -1741,7 +1743,7 @@ echo "This is a test" | sed 's/test/big test/'
 # s命令会用斜线间指定的第二个文本字符串来替换第一个文本字符串，两端的单引号是边界，s是命令，两边的斜线值字符串边界，中间的斜线是分割线
 输出：This is a big test
 ```
-sed编辑器并不会修改文本文件的数据，只会将修改后的数据发送到STDOUT，如果查看原来的文本文件，仍然是原始数据。
+sed编辑器并不会修改文本文件的数据，只会将修改后的数据发送到STDOUT，如果查看原来的文本文件，仍然是原始数据。若要修改文本原始数据，需要用-i参数
 
 在命令行汇总使用多个编辑命令时，只需用-e选项即可，两个命令都作用在文件中的每行数据上，命令之间必须用分号隔开，并且在命令末尾和分号之间不能有空格；或者用两个单引号包含住分行写的命令，但是必须在封尾单引号所在行结束命令，shell一旦发现了封尾单引号就会执行命令。。
 ```
@@ -1791,7 +1793,7 @@ EOF
 sed 's/test/trial/2' test.txt
 输出：This is a test of the trial script.
 	 This is the second trial of the trial script.
-	 
+
 sed 's/test/trial/g' test.txt
 
 sed -n 's/test/trial/p' text.txt
@@ -1806,8 +1808,198 @@ sed 's/test/trial/w test.txt' data.txt
 sed 's/\/bin\/bash\/bin\/csh/' /etc/passwd
 sed 's%/bin/bash%/bin/csh%' /etc/passwd
 ```
+
+## 第十七次整理
+### 时间：2019年1月17日
+### 主要内容：
+使用地址
+默认情况下，sed编辑器中使用的命令会作用于文本数据的所有行，如果只想将命令作用于特定行，则需要用行寻址
+- [ ] 以数字形式表示行区间
+- [ ] 用文本模式来过滤出行
+```
+[address]command
+或
+address {
+    command1
+    command2
+    command3
+}
+```
+数字方式行寻址
+使用数字方式寻址时，可以用行在文本流中的行位置来引用，sed将文本流第一行编号为1，然后继续按照顺序为接下来的行分配行号，在命令中指定地址可以是单个行号。
+```
+cat >>test.txt <<EOF
+The quick brown fox jumps over the lazy dog
+The quick brown fox jumps over the lazy dog
+The quick brown fox jumps over the lazy dog
+EOF
+# 指定地址为单个行号
+sed '2s/dog/cat/' text.txt
+输出：The quick brown fox jumps over the lazy dog
+	 The quick brown fox jumps over the lazy cat
+	 The quick brown fox jumps over the lazy dog
+# 指定的一定区间范围内的行
+sed '2,3s/dog/cat/' test.txt
+输出：The quick brown fox jumps over the lazy dog
+	 The quick brown fox jumps over the lazy cat
+	 The quick brown fox jumps over the lazy cat
+# 将命令作用到文本中从某行开始的所有行
+sed '2,$s/dog/cat/' text.txt
+输出：The quick brown fox jumps over the lazy dog
+	 The quick brown fox jumps over the lazy cat
+	 The quick brown fox jumps over the lazy cat
+```
+使用文本模式过滤
+sed允许指定文本模式来过滤命令作用的行，必须用正斜线将要指定的pattern封起来。
+如只想修改Samantha用户的默认shell
+
+```
+grep Samantha /etc/passwd
+Samantha:x:502:502::/home/Samantha:/bin/bash
+sed '/Samantha/s/bash/csh/' /etc/passwd
+# /Samantha/的意思是查找该字符串
+输出：Samantha:x:502:502::/home/Samantha:/bin/csh
+```
+删除行
+删除命令d会删除匹配指定寻址模式的所有行。
+```
+cat >>test.txt <<EOF
+This is line number 1
+This is line number 2
+This is line number 3
+EOF
+sed '2，3d' text.txt
+输出：This is line number 1
+sed '/number 1/d' text.txt
+输出：This is line number 2
+	 This is line number 3
+```
+插入、追加、修改和写入文件
+- [ ] 插入命令（i）会在指定行前增加一个新行；
+- [ ] 追加命令（a）会在指定行后增加一个新行；
+- [ ] 修改命令（c）允许修改数据流中整行文本内容；
+- [ ] 写入命令（w）向文件写入行
+```
+echo "Test line 2" | sed 'i\Test line 1'
+输出：Test line 1
+	 Test line 2
+echo "Test line 2" | sed 'i\Test line 1'
+输出：Test line 2
+	 Test line 1
+echo "Test line 2" | sed 'c\Test line 1'
+输出：Test line 1
+
+cat >>test.txt <<EOF
+This is line number 1
+This is line number 2
+This is line number 3
+EOF
+sed '1,2c\This is a new line of text' text.txt
+输出：This is a new line of text
+	 This is line number 3
+	 
+cat >>text1.txt <<EOF
+Blum, R		Browncoat
+Harken, c		Alliance
+EOF
+sed '/Browncoat/w Browncoat.txt' text1.txt
+# 先查找text1.txt中包含Browncoat的行，然后写入到Browncoat.txt中
+cat Browncoat.txt
+Blum, R		Browncoat
+```
+## 第十八次整理
+### 时间：2019年1月20日
+### 主要内容：
+正则表达式
+正则表达式是定义的模式模板，linux工具可以用它来过滤文本，能够在处理数据时使用正则表达式对数据进行模式匹配，如果数据匹配模式，则会被接受并进一步处理，若数据不匹配模式，则被虑掉，正则表达式利用通配符来描述数据流中的一个或多个字符。
+* 正则表达式与通配符
+>正则表达式用来在文件中匹配符合条件的字符串，正则是包含匹配，grep、awk、sed等命令可以支持正则表达式
+>通配符用来匹配符合条件的文件名，通配符是完全匹配，ls、find、cp这些命令不支持正则表达式，所以只能用shell自己的通配符来进行匹配
+
+基础正则表达式
+
+元字符 | 作用
+:-------: | :--------:
+* | 前一个字符匹配0次或任意多次
+. | 匹配除了换行符外任意一个字符
+^ | 匹配行首，如^hello会匹配以hello开头的行
+\$ | 匹配行尾，如hello$会匹配以hello结尾的行
+\\< | 在字的开始进行匹配，如grep '\<win' test.txt
+\\> | 在字的末尾进行匹配，如grep 'dows\>' test.txt
+[] | 匹配括号中指定的任意一个字符，如[0-9]匹配任意一位数字
+[^] | 匹配除括号内字符以外的任意一个字符，如[^0-9]匹配任意一位非数字字符
+\ | 转义符，用于取消特殊符号的含义
+\{n\} | 表示其前面的字符恰好出现n次，如[0-9]\{4\}匹配4位数字
+\{\n,\} |表示其前面的字符出现不小于n次，如[0-9]\{2,\}匹配两位及以上的数字
+\{m,n\} | 表示其前面的字符至少出现m次，最多出现n次，如[a-z]\{6,8\}匹配6位到8位的小写字母
+
+grep 命令常用开关
+命令 | 描述
+:---: | :---:
+-E | 使用扩充正则表达式进行匹配
+-i | 不区分大小写
+-n | 在每一输出行前显示文件内的行号
+-q | 与其他命令一起使用，抑止输出显示
+-s | 抑止文件的出错信息
+-num | 在每一匹配行前后各显示num行
+-v | 反向匹配
+-l | 返回匹配到的文件名称
+
+正则表达式实战
+目录文件计数
+编写一个shell脚本，对PATH环境变量中定义的目录里的可执行文件进行计数
+1. 首先需要将PATH变量解析成独立的目录名
+```
+echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+```
+PATH中的每个路径由冒号分割，要获取可在脚本中使用的目录列表，可以使用空格替换冒号
+```
+echo $PATH | sed 's/:/ /g'
+/usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin
+```
+分离出目录后，可以使用for循环遍历每个目录
+```
+mypath=$(echo $PATH | sed 's/:/ /g')
+for directory in $mypath
+do
+...
+done
+```
+获取了单个目录，可以用ls命令来列出每个目录中的文件，并用另一个for语句来遍历每个文件，为文件计数器增值
+
+最终脚本
+```
+#!/bin/bash
+# count number of files in your PATH 
+mypath=$(echo $PATH | sed 's/:/ /g')
+count=0
+for directory in $mypath
+do
+	check=$(ls $directory)
+	for item in $check
+	do
+		count=$[ $count + 1 ]
+	done
+	echo "$directory - $count"
+	count=0
+done
+输出：/usr/local/sbin - 0
+	 /usr/local/bin - 16
+	 /usr/sbin - 130
+	 /usr/bin - 1030
+	 /sbin - 110
+	 /bin - 135
+```
+## 第十九次整理
+### 时间：2019年1月22日
+### 主要内容：
+sed进阶
+
 # **Markdown操作手册**
+
 # 一级标题
+
 ## 二级标题
 ### 三级标题
 #### 四级标题
@@ -1865,7 +2057,7 @@ First Header | Second Header | Third Header
 Left         | Center        | Right
 Left         | Center        | Right
 
-![结束语](http://pic1.win4000.com/mobile/2018-09-14/5b9b46faab09f.jpg "美女镇楼")
+![结束语](http://pic1.win4000.com/mobile/2019-01-16/5c3e9507c88ae.jpg "美女镇楼")
 
 ```
 
